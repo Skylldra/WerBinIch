@@ -7,18 +7,15 @@
     <script defer src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io();
-        let isPlayerAdded = false; // Verhindert mehrfaches Hinzufügen eines Spielers
 
         // Spieler hinzufügen
         function registerPlayer() {
             const playerNameInput = document.getElementById("player-name");
             const name = playerNameInput.value.trim();
 
-            if (name && !isPlayerAdded) {
+            if (name) {
                 socket.emit("add-player", name); // Sende den Namen an den Server
-                isPlayerAdded = true; // Sperre weiteres Hinzufügen
-                document.getElementById("add-player-button").disabled = true; // Deaktiviere den Button
-                playerNameInput.disabled = true; // Deaktiviere das Eingabefeld
+                playerNameInput.value = ""; // Eingabefeld leeren
             }
         }
 
@@ -80,6 +77,12 @@
             </thead>
             <tbody id="player-list"></tbody>
         </table>
+
+        <!-- Spiel starten -->
+        <div class="form-section">
+            <label><input type="checkbox" id="confirm-start"> Bestätigung</label>
+            <button id="start-game-button" onclick="startGame()">Spiel starten</button>
+        </div>
     </div>
 </body>
 </html>
