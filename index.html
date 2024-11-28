@@ -7,21 +7,49 @@
     <script defer src="/socket.io/socket.io.js"></script>
     <script defer src="index.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; text-align: center; padding: 20px; }
-        .hidden { display: none; }
-        .player-list { margin: 20px auto; max-width: 600px; text-align: left; }
-        button, input, label { margin: 5px; }
-        table { margin: 20px auto; border-collapse: collapse; width: 50%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+            padding: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .player-list {
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: left;
+        }
+        button, input, label {
+            margin: 5px;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 50%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-section {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
     <h1>Wer bin ich?</h1>
     <div id="register-section">
         <!-- Eingabefeld für Spielername und Hinzufügen -->
-        <input type="text" id="player-name" placeholder="Spielername eingeben">
-        <button id="add-player-button" onclick="registerPlayer()">Spieler hinzufügen</button>
+        <div class="form-section">
+            <input type="text" id="player-name" placeholder="Spielername eingeben">
+            <button id="add-player-button" onclick="registerPlayer()">Spieler hinzufügen</button>
+        </div>
         
         <!-- Tabelle mit Spielernamen -->
         <table id="player-table" class="hidden">
@@ -34,8 +62,10 @@
         </table>
 
         <!-- Checkbox und Spiel starten Button -->
-        <label><input type="checkbox" id="confirm-start"> Bestätigung</label>
-        <button id="start-game-button" onclick="startGame()">Spiel starten</button>
+        <div class="form-section">
+            <label><input type="checkbox" id="confirm-start"> Bestätigung</label>
+            <button id="start-game-button" onclick="startGame()">Spiel starten</button>
+        </div>
     </div>
 
     <script>
