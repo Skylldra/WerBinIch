@@ -10,7 +10,7 @@ let players = [];
 let gameStarted = false;
 
 // Serve static files (like index.html) from the root directory
-app.use(express.static(__dirname + "/"));
+app.use(express.static(__dirname));
 
 // Serve index.html for the root route
 app.get("/", (req, res) => {
