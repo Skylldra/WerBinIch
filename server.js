@@ -8,22 +8,26 @@ const io = new Server(server);
 
 let players = []; // Liste der Spieler
 
-app.use(express.static(__dirname)); // Statische Dateien bereitstellen
+// Statische Dateien bereitstellen
+app.use(express.static(__dirname));
 
+// Route für die Hauptseite
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html"); // Hauptseite
+    res.sendFile(__dirname + "/index.html");
 });
 
-// Socket.io-Ereignisse
+// Socket.io-Verbindung
 io.on("connection", (socket) => {
     console.log("Ein Nutzer hat sich verbunden");
 
     // Spieler hinzufügen
     socket.on("add-player", (name) => {
-        if (!players.includes(name)) { // Spieler darf nicht doppelt hinzugefügt werden
+        if (!players.includes(name)) { // Spielername darf nicht doppelt sein
             players.push(name);
-            console.log("Spieler hinzugefügt:", name);
-            io.emit("update-players", players); // Aktualisiere die Spieler-Liste für alle Clients
+            console.log(`Spieler hinzugefügt: ${name}`);
+            io.emit("update-players", players); // Aktualisiere Spieler-Liste für alle Clients
+        } else {
+            console.log(`Spielername bereits vorhanden: ${name}`);
         }
     });
 
