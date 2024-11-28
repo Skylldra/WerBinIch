@@ -26,8 +26,6 @@ io.on("connection", (socket) => {
             players.push(name);
             console.log(`Spieler hinzugefügt: ${name}`);
             io.emit("update-players", players); // Aktualisiere Spieler-Liste für alle Clients
-        } else {
-            console.log(`Spielername bereits vorhanden: ${name}`);
         }
     });
 
