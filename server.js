@@ -6,14 +6,15 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let players = [];
+let players = []; // Liste der Spieler
 
 app.use(express.static(__dirname)); // Statische Dateien bereitstellen
 
 app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html"); // Root-Route
+    res.sendFile(__dirname + "/index.html"); // Hauptseite
 });
 
+// Socket.io-Ereignisse
 io.on("connection", (socket) => {
     console.log("Ein Nutzer hat sich verbunden");
 
@@ -22,9 +23,7 @@ io.on("connection", (socket) => {
         if (!players.includes(name)) { // Spieler darf nicht doppelt hinzugefügt werden
             players.push(name);
             console.log("Spieler hinzugefügt:", name);
-            io.emit("update-players", players); // Aktualisiere die Liste für alle Clients
-        } else {
-            console.log("Spielername bereits vorhanden:", name);
+            io.emit("update-players", players); // Aktualisiere die Spieler-Liste für alle Clients
         }
     });
 
@@ -34,5 +33,6 @@ io.on("connection", (socket) => {
     });
 });
 
+// Server starten
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
