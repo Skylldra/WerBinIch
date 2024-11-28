@@ -9,7 +9,13 @@ const io = new Server(server);
 let players = [];
 let gameStarted = false;
 
+// Serve static files (like index.html)
 app.use(express.static(__dirname));
+
+// Serve index.html for the root route
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+});
 
 io.on("connection", (socket) => {
     console.log("Ein Nutzer hat sich verbunden");
