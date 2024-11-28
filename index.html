@@ -9,79 +9,52 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f9; text-align: center; padding: 20px; }
         .hidden { display: none; }
-        .player-list, .game-area { margin: 20px auto; max-width: 600px; text-align: left; }
+        .player-list { margin: 20px auto; max-width: 600px; text-align: left; }
         button, input, label { margin: 5px; }
+        table { margin: 20px auto; border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
     </style>
 </head>
 <body>
     <h1>Wer bin ich?</h1>
     <div id="register-section">
         <input type="text" id="player-name" placeholder="Spielername eingeben">
-        <button onclick="registerPlayer()">Spieler hinzufügen</button>
-        <ul id="player-list"></ul>
-        <label><input type="checkbox" id="confirm-start"> Bestätigung</label>
-        <button onclick="startGame()">Spiel starten</button>
-    </div>
-    <div id="game-section" class="hidden">
-        <div id="assignment-section">
-            <h3>Zuweisung</h3>
-            <ul id="assignments"></ul>
-        </div>
-        <div id="question-section">
-            <h3>Fragen stellen</h3>
-            <p id="current-player"></p>
-            <ul id="question-status"></ul>
-        </div>
-        <label><input type="checkbox" id="confirm-end"> Bestätigung</label>
-        <button onclick="endGame()">Spiel beenden</button>
+        <button id="add-player-button" onclick="registerPlayer()">Spieler hinzufügen</button>
+        <table id="player-table" class="hidden">
+            <thead>
+                <tr>
+                    <th>Spieler</th>
+                </tr>
+            </thead>
+            <tbody id="player-list"></tbody>
+        </table>
     </div>
     <script>
         const socket = io();
         const playerNameInput = document.getElementById("player-name");
         const playerList = document.getElementById("player-list");
-        const confirmStart = document.getElementById("confirm-start");
-        const confirmEnd = document.getElementById("confirm-end");
-        const gameSection = document.getElementById("game-section");
+        const playerTable = document.getElementById("player-table");
+        const addPlayerButton = document.getElementById("add-player-button");
 
-        let players = [];
+        let isPlayerAdded = false; // Verhindert, dass ein Spieler mehrfach hinzugefügt wird
 
         function registerPlayer() {
             const name = playerNameInput.value.trim();
-            if (name) {
-                socket.emit("add-player", name);
-                playerNameInput.value = "";
+            if (name && !isPlayerAdded) {
+                socket.emit("add-player", name); // An den Server senden
+                isPlayerAdded = true; // Sperre das Hinzufügen weiterer Spieler
+                addPlayerButton.disabled = true; // Deaktiviere den Button
+                playerNameInput.disabled = true; // Deaktiviere das Eingabefeld
             }
         }
 
-        function startGame() {
-            if (confirmStart.checked) {
-                socket.emit("start-game");
-            } else {
-                alert("Bitte bestätigen Sie das Starten des Spiels.");
+        // Aktualisiere die Tabelle, wenn neue Spieler hinzugefügt werden
+        socket.on("update-players", (players) => {
+            playerList.innerHTML = players.map(player => `<tr><td>${player}</td></tr>`).join("");
+            if (players.length > 0) {
+                playerTable.classList.remove("hidden"); // Zeige die Tabelle, wenn Spieler existieren
             }
-        }
-
-        function endGame() {
-            if (confirmEnd.checked) {
-                socket.emit("end-game");
-            } else {
-                alert("Bitte bestätigen Sie das Beenden des Spiels.");
-            }
-        }
-
-        socket.on("update-players", (updatedPlayers) => {
-            players = updatedPlayers;
-            playerList.innerHTML = players.map(player => `<li>${player}</li>`).join("");
-        });
-
-        socket.on("game-started", () => {
-            document.getElementById("register-section").classList.add("hidden");
-            gameSection.classList.remove("hidden");
-        });
-
-        socket.on("game-ended", () => {
-            alert("Das Spiel wurde beendet.");
-            window.location.reload();
         });
     </script>
 </body>
