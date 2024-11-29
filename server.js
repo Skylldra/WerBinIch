@@ -1,6 +1,7 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -10,7 +11,13 @@ let players = [];
 let assignments = {};
 let gameStarted = false;
 
-app.use(express.static('public'));
+// Statische Dateien bereitstellen
+app.use(express.static(path.join(__dirname)));
+
+// Standard-Route für die Index-Seite
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 io.on('connection', (socket) => {
   socket.on('addPlayer', (name) => {
