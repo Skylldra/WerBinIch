@@ -9,7 +9,7 @@ const io = new Server(server);
 
 let players = [];
 let assignments = {};
-let gameStarted = false;
+let submittedWords = {};
 
 // Statische Dateien bereitstellen
 app.use(express.static(path.join(__dirname)));
@@ -21,42 +21,52 @@ app.get('/', (req, res) => {
 
 // Socket.IO-Verbindungen
 io.on('connection', (socket) => {
-  console.log('Ein Spieler hat sich verbunden.');
-
-  // Aktuelle Spieler-Liste und Zustand senden
-  socket.emit('updatePlayerList', players);
-  if (gameStarted) {
-    socket.emit('gameStarted', { assignments, players });
-  }
+  console.log('Ein Spieler hat sich verbunden:', socket.id);
 
   // Spieler hinzufügen
   socket.on('addPlayer', (name) => {
     if (!players.includes(name)) {
       players.push(name);
-      io.emit('updatePlayerList', players); // Synchronisiere Liste mit allen
+      io.emit('updatePlayerList', players); // Aktualisiere die Liste für alle Clients
     }
   });
 
   // Spiel starten
   socket.on('startGame', () => {
-    if (players.length < 2 || gameStarted) return;
-    gameStarted = true;
+    if (players.length < 2) return;
 
-    // Spieler zufällig zuweisen
+    // Zufällige Zuweisung von Spielern
+    assignments = {};
     const shuffled = [...players].sort(() => Math.random() - 0.5);
     players.forEach((player, index) => {
-      assignments[player] = shuffled[index + 1] || shuffled[0];
+      assignments[player] = shuffled[(index + 1) % players.length];
     });
 
-    io.emit('gameStarted', { assignments, players }); // Synchronisiere Spielstatus mit allen
+    // Wörter zurücksetzen
+    submittedWords = {};
+
+    // Spielstatus an alle senden
+    io.emit('gameStarted', { assignments, currentPlayer: socket.id });
+  });
+
+  // Wort bestätigen
+  socket.on('submitWord', ({ player, word }) => {
+    submittedWords[player] = word;
+
+    // Überprüfen, ob alle Spieler ihre Wörter eingereicht haben
+    if (Object.keys(submittedWords).length === players.length) {
+      io.emit('allWordsSubmitted', submittedWords); // Alle Wörter an alle Clients senden
+    }
   });
 
   // Verbindung trennen
   socket.on('disconnect', () => {
-    console.log('Ein Spieler hat die Verbindung getrennt.');
+    console.log('Ein Spieler hat die Verbindung getrennt:', socket.id);
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server läuft auf Port 3000');
+// Server starten
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server läuft auf Port ${PORT}`);
 });
