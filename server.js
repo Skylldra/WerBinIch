@@ -23,11 +23,17 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log('Ein Spieler hat sich verbunden.');
 
+  // Aktuelle Spieler-Liste und Zustand senden
+  socket.emit('updatePlayerList', players);
+  if (gameStarted) {
+    socket.emit('gameStarted', { assignments, players });
+  }
+
   // Spieler hinzufügen
   socket.on('addPlayer', (name) => {
     if (!players.includes(name)) {
       players.push(name);
-      io.emit('updatePlayerList', players); // Aktualisiere die Liste für alle Clients
+      io.emit('updatePlayerList', players); // Synchronisiere Liste mit allen
     }
   });
 
@@ -36,24 +42,13 @@ io.on('connection', (socket) => {
     if (players.length < 2 || gameStarted) return;
     gameStarted = true;
 
-    // Spieler zuweisen
+    // Spieler zufällig zuweisen
     const shuffled = [...players].sort(() => Math.random() - 0.5);
     players.forEach((player, index) => {
       assignments[player] = shuffled[index + 1] || shuffled[0];
     });
 
-    io.emit('gameStarted', { assignments, players }); // Spielstatus an alle senden
-  });
-
-  // Spieler entfernen (optional, falls benötigt)
-  socket.on('removePlayer', (name) => {
-    players = players.filter((player) => player !== name);
-    io.emit('updatePlayerList', players);
-  });
-
-  // Nächster Spielerzug
-  socket.on('nextTurn', (currentPlayer) => {
-    io.emit('nextTurn', currentPlayer); // Nächster Spielerzug für alle synchronisieren
+    io.emit('gameStarted', { assignments, players }); // Synchronisiere Spielstatus mit allen
   });
 
   // Verbindung trennen
