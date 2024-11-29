@@ -9,9 +9,40 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    #registration, #game {
+      max-width: 500px;
+      margin: 20px auto;
+      text-align: left;
+    }
+    ul {
+      list-style-position: inside;
+    }
+    h1, h2 {
+      text-align: center;
     }
     .hidden {
       display: none;
+    }
+    .player-list {
+      margin-top: 10px;
+      padding-left: 10px;
+    }
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+    button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    #playerName {
+      width: 100%;
+      padding: 5px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -20,9 +51,10 @@
   <div id="registration">
     <input id="playerName" type="text" placeholder="Spielername">
     <button onclick="addPlayer()">Spieler hinzufügen</button>
-    <ul id="playerList"></ul>
+    <h2>Mitspieler</h2>
+    <ul id="playerList" class="player-list"></ul>
     <label>
-      <input id="startCheckbox" type="checkbox"> Alle Spieler hinzugefügt
+      <input id="startCheckbox" type="checkbox" onchange="updateStartButton()"> Alle Spieler hinzugefügt
     </label>
     <button onclick="startGame()" disabled id="startButton">Spiel starten</button>
   </div>
@@ -65,8 +97,15 @@
         li.textContent = player;
         playerList.appendChild(li);
       });
-      document.getElementById('startButton').disabled = players.length < 2 || !document.getElementById('startCheckbox').checked;
+      updateStartButton(); // Button-Status prüfen
     });
+
+    // Start-Button aktivieren, wenn Checkbox und Spieleranzahl passen
+    function updateStartButton() {
+      const startButton = document.getElementById('startButton');
+      const startCheckbox = document.getElementById('startCheckbox');
+      startButton.disabled = !(players.length >= 2 && startCheckbox.checked);
+    }
 
     // Spiel starten synchronisieren
     socket.on('gameStarted', ({ assignments, players }) => {
