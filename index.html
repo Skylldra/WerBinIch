@@ -65,6 +65,17 @@
       cursor: pointer;
       font-size: 14px;
     }
+
+    /* Darkmode Styling */
+    body.dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+    button.dark-mode {
+      background-color: #333333;
+      color: #ffffff;
+      border: 1px solid #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -110,6 +121,9 @@
     // Darkmode aktivieren/deaktivieren
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
+      document.querySelectorAll('button').forEach(button => {
+        button.classList.toggle('dark-mode');
+      });
     }
 
     // Spieler hinzufügen
