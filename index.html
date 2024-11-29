@@ -6,7 +6,6 @@
   <title>Wer bin ich</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
-    /* Standard-Styling */
     body {
       font-family: Arial, sans-serif;
       text-align: center;
@@ -87,15 +86,16 @@
   </div>
 
   <div id="game" class="hidden">
-    <h2 id="currentPlayerTurn"></h2>
-    <div id="guessSection"></div>
-    <ul id="turnList"></ul>
+    <h2>Spiel läuft!</h2>
+    <p>Es wurden folgende Rollen verteilt:</p>
+    <ul id="rolesList"></ul>
   </div>
 
   <script>
     const socket = io();
 
     let players = [];
+    let assignments = {};
     let gameStarted = false;
 
     // Darkmode aktivieren/deaktivieren
@@ -135,20 +135,32 @@
       updateStartButton(); // Button-Status prüfen
     });
 
-    // Start-Button aktivieren, wenn Checkbox und Spieleranzahl passen
+    // Spielstatus empfangen und anzeigen
+    socket.on('gameStarted', ({ assignments: assignedRoles, players: gamePlayers }) => {
+      gameStarted = true;
+      assignments = assignedRoles;
+      players = gamePlayers;
+
+      // Registrierung verstecken, Spielbereich zeigen
+      document.getElementById('registration').classList.add('hidden');
+      document.getElementById('game').classList.remove('hidden');
+
+      // Rollen anzeigen
+      const rolesList = document.getElementById('rolesList');
+      rolesList.innerHTML = '';
+      Object.entries(assignments).forEach(([player, role]) => {
+        const li = document.createElement('li');
+        li.textContent = `${player} muss erraten, dass er/sie ${role} ist`;
+        rolesList.appendChild(li);
+      });
+    });
+
+    // Start-Button aktivieren, wenn Bedingungen erfüllt
     function updateStartButton() {
       const startButton = document.getElementById('startButton');
       const startCheckbox = document.getElementById('startCheckbox');
       startButton.disabled = !(players.length >= 2 && startCheckbox.checked);
     }
-
-    // Spiel starten synchronisieren
-    socket.on('gameStarted', ({ assignments, players }) => {
-      gameStarted = true;
-      document.getElementById('registration').classList.add('hidden');
-      document.getElementById('game').classList.remove('hidden');
-      console.log('Spiel gestartet!', assignments);
-    });
   </script>
 </body>
 </html>
