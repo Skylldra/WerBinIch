@@ -1,14 +1,13 @@
 {
-    "name": "wer-bin-ich",
-    "version": "1.0.0",
-    "description": "Ein Multiplayer-Spiel: Wer bin ich?",
-    "main": "server.js",
-    "scripts": {
-        "start": "node server.js"
-    },
-    "dependencies": {
-        "express": "^4.17.1",
-        "socket.io": "^4.5.3"
-    },
-    "license": "MIT"
+  "name": "wer-bin-ich",
+  "version": "1.0.0",
+  "description": "Wer bin ich Spiel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.5.4"
+  }
 }
