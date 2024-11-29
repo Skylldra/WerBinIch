@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Wer bin ich</title>
+  <script src="/socket.io/socket.io.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -33,21 +34,30 @@
   </div>
 
   <script>
-    let players = [];
-    let assignments = {};
-    let currentPlayerIndex = 0;
-    let hasStarted = false;
+    const socket = io();
 
+    let players = [];
+    let gameStarted = false;
+
+    // Spieler hinzufügen
     function addPlayer() {
       const playerName = document.getElementById('playerName').value.trim();
-      if (playerName && !players.includes(playerName)) {
-        players.push(playerName);
-        updatePlayerList();
+      if (playerName) {
+        socket.emit('addPlayer', playerName); // Sende den neuen Spieler an den Server
       }
       document.getElementById('playerName').value = '';
     }
 
-    function updatePlayerList() {
+    // Spiel starten
+    function startGame() {
+      if (players.length >= 2 && document.getElementById('startCheckbox').checked) {
+        socket.emit('startGame'); // Sende Startsignal an den Server
+      }
+    }
+
+    // Spieler-Liste aktualisieren
+    socket.on('updatePlayerList', (updatedPlayers) => {
+      players = updatedPlayers;
       const playerList = document.getElementById('playerList');
       playerList.innerHTML = '';
       players.forEach(player => {
@@ -56,41 +66,15 @@
         playerList.appendChild(li);
       });
       document.getElementById('startButton').disabled = players.length < 2 || !document.getElementById('startCheckbox').checked;
-    }
+    });
 
-    function startGame() {
-      if (players.length < 2) return;
-      hasStarted = true;
+    // Spiel starten synchronisieren
+    socket.on('gameStarted', ({ assignments, players }) => {
+      gameStarted = true;
       document.getElementById('registration').classList.add('hidden');
       document.getElementById('game').classList.remove('hidden');
-      assignPlayers();
-      showCurrentTurn();
-    }
-
-    function assignPlayers() {
-      const shuffled = [...players].sort(() => Math.random() - 0.5);
-      players.forEach((player, index) => {
-        assignments[player] = shuffled[index + 1] || shuffled[0];
-      });
-    }
-
-    function showCurrentTurn() {
-      const currentPlayer = players[currentPlayerIndex];
-      document.getElementById('currentPlayerTurn').textContent = `Fragensteller: ${currentPlayer}`;
-      const guessSection = document.getElementById('guessSection');
-      guessSection.innerHTML = '';
-      if (assignments[currentPlayer]) {
-        guessSection.innerHTML = `
-          <p>Du bist dran! Stelle eine Ja/Nein Frage.</p>
-          <button onclick="nextPlayer()">Weiter</button>
-        `;
-      }
-    }
-
-    function nextPlayer() {
-      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-      showCurrentTurn();
-    }
+      console.log('Spiel gestartet!', assignments);
+    });
   </script>
 </body>
 </html>
