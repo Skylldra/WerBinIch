@@ -42,7 +42,8 @@ io.on('connection', (socket) => {
     });
 
     submittedWords = {};
-    io.emit('gameStarted', { assignments, currentPlayer: socket.id });
+    const currentPlayer = players[0]; // Erster Spieler beginnt
+    io.emit('gameStarted', { assignments, currentPlayer });
   });
 
   // Wort einreichen
