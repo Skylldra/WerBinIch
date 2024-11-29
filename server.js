@@ -19,34 +19,33 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Hilfsfunktion für zufällige Zuweisung
+// Hilfsfunktion für zufällige und gültige Zuweisung
 function assignPlayers(players) {
   const shuffled = [...players];
-  const assignments = {};
+  let valid = false;
+  let assignments = {};
 
-  let attempts = 0;
-  do {
-    attempts++;
-    shuffled.sort(() => Math.random() - 0.5);
+  // Versuche, eine gültige Zuordnung zu erstellen
+  while (!valid) {
+    shuffled.sort(() => Math.random() - 0.5); // Spielerliste zufällig mischen
+    valid = true;
 
     // Prüfen, ob kein Spieler sich selbst zugewiesen wird
-    let valid = true;
-    for (let i = 0; i < players.length; i++) {
-      if (players[i] === shuffled[i]) {
+    players.forEach((player, index) => {
+      if (player === shuffled[index]) {
         valid = false;
-        break;
       }
-    }
+    });
 
+    // Wenn gültig, Zuweisungen erstellen
     if (valid) {
       players.forEach((player, index) => {
         assignments[player] = shuffled[index];
       });
-      return assignments;
     }
-  } while (attempts < 100);
+  }
 
-  throw new Error('Konnte keine gültige Zuordnung erstellen!');
+  return assignments;
 }
 
 // Socket.IO-Verbindungen
@@ -65,14 +64,10 @@ io.on('connection', (socket) => {
   socket.on('startGame', () => {
     if (players.length < 2) return;
 
-    try {
-      assignments = assignPlayers(players);
-      submittedWords = {};
-      const currentPlayer = players[0]; // Erster Spieler beginnt
-      io.emit('gameStarted', { assignments, currentPlayer });
-    } catch (error) {
-      console.error(error.message);
-    }
+    assignments = assignPlayers(players);
+    submittedWords = {};
+    const currentPlayer = players[0]; // Erster Spieler beginnt
+    io.emit('gameStarted', { assignments, currentPlayer });
   });
 
   // Wort einreichen
