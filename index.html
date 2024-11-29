@@ -1,88 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wer bin ich?</title>
-    <script defer src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-
-        // Spieler hinzufügen
-        function registerPlayer() {
-            const playerNameInput = document.getElementById("player-name");
-            const name = playerNameInput.value.trim();
-
-            if (name) {
-                socket.emit("add-player", name); // Sende den Namen an den Server
-                playerNameInput.value = ""; // Eingabefeld leeren
-            }
-        }
-
-        // Spieler-Liste aktualisieren
-        socket.on("update-players", (players) => {
-            const playerList = document.getElementById("player-list");
-            const playerTable = document.getElementById("player-table");
-
-            // Tabelle mit Spielernamen aktualisieren
-            playerList.innerHTML = players.map(player => `<tr><td>${player}</td></tr>`).join("");
-            if (players.length > 0) {
-                playerTable.classList.remove("hidden"); // Zeige die Tabelle
-            }
-        });
-    </script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            text-align: center;
-            padding: 20px;
-        }
-        .hidden {
-            display: none;
-        }
-        .form-section {
-            margin-bottom: 20px;
-        }
-        table {
-            margin: 20px auto;
-            border-collapse: collapse;
-            width: 50%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wer bin ich</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <h1>Wer bin ich?</h1>
-    <div id="register-section">
-        <!-- Eingabefeld und Button -->
-        <div class="form-section">
-            <input type="text" id="player-name" placeholder="Spielername eingeben">
-            <button id="add-player-button" onclick="registerPlayer()">Spieler hinzufügen</button>
-        </div>
+  <h1>Wer bin ich</h1>
+  <div id="registration">
+    <input id="playerName" type="text" placeholder="Spielername">
+    <button onclick="addPlayer()">Spieler hinzufügen</button>
+    <ul id="playerList"></ul>
+    <label>
+      <input id="startCheckbox" type="checkbox"> Alle Spieler hinzugefügt
+    </label>
+    <button onclick="startGame()" disabled id="startButton">Spiel starten</button>
+  </div>
 
-        <!-- Tabelle für Spieler -->
-        <table id="player-table" class="hidden">
-            <thead>
-                <tr>
-                    <th>Spieler</th>
-                </tr>
-            </thead>
-            <tbody id="player-list"></tbody>
-        </table>
+  <div id="game" class="hidden">
+    <h2 id="currentPlayerTurn"></h2>
+    <div id="guessSection"></div>
+    <ul id="turnList"></ul>
+  </div>
 
-        <!-- Spiel starten -->
-        <div class="form-section">
-            <label><input type="checkbox" id="confirm-start"> Bestätigung</label>
-            <button id="start-game-button" onclick="startGame()">Spiel starten</button>
-        </div>
-    </div>
+  <script>
+    let players = [];
+    let assignments = {};
+    let currentPlayerIndex = 0;
+    let hasStarted = false;
+
+    function addPlayer() {
+      const playerName = document.getElementById('playerName').value.trim();
+      if (playerName && !players.includes(playerName)) {
+        players.push(playerName);
+        updatePlayerList();
+      }
+      document.getElementById('playerName').value = '';
+    }
+
+    function updatePlayerList() {
+      const playerList = document.getElementById('playerList');
+      playerList.innerHTML = '';
+      players.forEach(player => {
+        const li = document.createElement('li');
+        li.textContent = player;
+        playerList.appendChild(li);
+      });
+      document.getElementById('startButton').disabled = players.length < 2 || !document.getElementById('startCheckbox').checked;
+    }
+
+    function startGame() {
+      if (players.length < 2) return;
+      hasStarted = true;
+      document.getElementById('registration').classList.add('hidden');
+      document.getElementById('game').classList.remove('hidden');
+      assignPlayers();
+      showCurrentTurn();
+    }
+
+    function assignPlayers() {
+      const shuffled = [...players].sort(() => Math.random() - 0.5);
+      players.forEach((player, index) => {
+        assignments[player] = shuffled[index + 1] || shuffled[0];
+      });
+    }
+
+    function showCurrentTurn() {
+      const currentPlayer = players[currentPlayerIndex];
+      document.getElementById('currentPlayerTurn').textContent = `Fragensteller: ${currentPlayer}`;
+      const guessSection = document.getElementById('guessSection');
+      guessSection.innerHTML = '';
+      if (assignments[currentPlayer]) {
+        guessSection.innerHTML = `
+          <p>Du bist dran! Stelle eine Ja/Nein Frage.</p>
+          <button onclick="nextPlayer()">Weiter</button>
+        `;
+      }
+    }
+
+    function nextPlayer() {
+      currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+      showCurrentTurn();
+    }
+  </script>
 </body>
 </html>
