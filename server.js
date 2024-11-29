@@ -1,40 +1,40 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-let players = []; // Liste der Spieler
+let players = [];
+let assignments = {};
+let gameStarted = false;
 
-// Statische Dateien bereitstellen
-app.use(express.static(__dirname));
+app.use(express.static('public'));
 
-// Route für die Hauptseite
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html");
+io.on('connection', (socket) => {
+  socket.on('addPlayer', (name) => {
+    if (!players.includes(name)) {
+      players.push(name);
+      io.emit('updatePlayerList', players);
+    }
+  });
+
+  socket.on('startGame', () => {
+    if (players.length < 2) return;
+    gameStarted = true;
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    players.forEach((player, index) => {
+      assignments[player] = shuffled[index + 1] || shuffled[0];
+    });
+    io.emit('gameStarted', { assignments, players });
+  });
+
+  socket.on('nextTurn', () => {
+    io.emit('nextTurn');
+  });
 });
 
-// Socket.io-Verbindung
-io.on("connection", (socket) => {
-    console.log("Ein Nutzer hat sich verbunden");
-
-    // Spieler hinzufügen
-    socket.on("add-player", (name) => {
-        if (!players.includes(name)) { // Spielername darf nicht doppelt sein
-            players.push(name);
-            console.log(`Spieler hinzugefügt: ${name}`);
-            io.emit("update-players", players); // Aktualisiere Spieler-Liste für alle Clients
-        }
-    });
-
-    // Verbindung trennen
-    socket.on("disconnect", () => {
-        console.log("Ein Nutzer hat die Verbindung getrennt");
-    });
+server.listen(3000, () => {
+  console.log('Listening on port 3000');
 });
-
-// Server starten
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));
