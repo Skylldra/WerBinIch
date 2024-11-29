@@ -13,7 +13,6 @@
       padding: 0;
       background-color: #ffffff;
       color: #000000;
-      transition: background-color 0.3s, color 0.3s;
     }
     #registration, #game, #wordInput {
       max-width: 500px;
@@ -33,33 +32,30 @@
       margin-top: 10px;
       padding-left: 10px;
     }
-    label {
-      display: block;
-      margin: 10px 0;
-    }
     button {
       margin-top: 10px;
       padding: 5px 10px;
       cursor: pointer;
     }
-    #playerName {
+    #playerName, #wordInputField {
       width: 100%;
       padding: 5px;
       margin-bottom: 10px;
     }
-
-    /* Mond-Symbol Styling */
-    #darkModeToggle {
+    #resetButton {
       position: absolute;
       top: 10px;
       right: 10px;
-      font-size: 24px;
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div id="darkModeToggle" onclick="toggleDarkMode()">🌙</div>
+  <button id="resetButton" onclick="resetGame()">Spiel zurücksetzen</button>
   <h1>Wer bin ich</h1>
 
   <div id="registration">
@@ -75,8 +71,7 @@
 
   <div id="wordInput" class="hidden">
     <h2>Spiel läuft!</h2>
-    <p>Du wurdest einem Spieler zugeteilt. Gib ein Wort ein, das erraten werden muss:</p>
-    <p id="assignedPlayer"></p>
+    <p id="assignedPlayer">Du wurdest einem Spieler zugewiesen.</p>
     <input id="wordInputField" type="text" placeholder="Wort eingeben">
     <button onclick="submitWord()">Bestätigen</button>
   </div>
@@ -94,16 +89,11 @@
     let submittedWords = {};
     let currentPlayer = null;
 
-    // Darkmode aktivieren/deaktivieren
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-    }
-
     // Spieler hinzufügen
     function addPlayer() {
       const playerName = document.getElementById('playerName').value.trim();
       if (playerName) {
-        socket.emit('addPlayer', playerName); // Sende den neuen Spieler an den Server
+        socket.emit('addPlayer', playerName);
       }
       document.getElementById('playerName').value = '';
     }
@@ -128,13 +118,6 @@
       updateStartButton();
     });
 
-    // Start-Button aktivieren
-    function updateStartButton() {
-      const startButton = document.getElementById('startButton');
-      const startCheckbox = document.getElementById('startCheckbox');
-      startButton.disabled = !(players.length >= 2 && startCheckbox.checked);
-    }
-
     // Spielerrollen empfangen
     socket.on('gameStarted', ({ assignments: assignedRoles, currentPlayer: player }) => {
       assignments = assignedRoles;
@@ -144,7 +127,7 @@
       document.getElementById('wordInput').classList.remove('hidden');
 
       const assignedPlayer = assignments[currentPlayer];
-      document.getElementById('assignedPlayer').textContent = `Du wurdest ${assignedPlayer} zugewiesen.`;
+      document.getElementById('assignedPlayer').textContent = `Du musst ein Wort für ${assignedPlayer} auswählen.`;
     });
 
     // Wort bestätigen
@@ -172,6 +155,19 @@
         }
       });
     });
+
+    // Spiel zurücksetzen
+    function resetGame() {
+      socket.emit('resetGame');
+      location.reload();
+    }
+
+    // Start-Button aktivieren
+    function updateStartButton() {
+      const startButton = document.getElementById('startButton');
+      const startCheckbox = document.getElementById('startCheckbox');
+      startButton.disabled = !(players.length >= 2 && startCheckbox.checked);
+    }
   </script>
 </body>
 </html>
