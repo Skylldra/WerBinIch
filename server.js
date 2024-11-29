@@ -45,17 +45,18 @@ io.on('connection', (socket) => {
     io.emit('gameStarted', { assignments, players }); // Spielstatus an alle senden
   });
 
-  // Spieler entfernt (optional)
+  // Spieler entfernen (optional, falls benötigt)
   socket.on('removePlayer', (name) => {
     players = players.filter((player) => player !== name);
     io.emit('updatePlayerList', players);
   });
 
-  // Nächster Spieler
+  // Nächster Spielerzug
   socket.on('nextTurn', (currentPlayer) => {
     io.emit('nextTurn', currentPlayer); // Nächster Spielerzug für alle synchronisieren
   });
 
+  // Verbindung trennen
   socket.on('disconnect', () => {
     console.log('Ein Spieler hat die Verbindung getrennt.');
   });
