@@ -25,6 +25,7 @@ function assignPlayers(players) {
   let assignments = {};
   let valid = false;
 
+  // Versuche, eine gültige Zuordnung zu erstellen
   while (!valid) {
     shuffled.sort(() => Math.random() - 0.5); // Spielerliste zufällig mischen
     valid = true;
@@ -64,13 +65,9 @@ io.on('connection', (socket) => {
   socket.on('startGame', () => {
     if (players.length < 2) return;
 
-    try {
-      assignments = assignPlayers(players); // Spieler korrekt zuweisen
-      submittedWords = {};
-      io.emit('gameStarted', { assignments });
-    } catch (error) {
-      console.error('Fehler bei der Spielerzuweisung:', error.message);
-    }
+    assignments = assignPlayers(players); // Spieler korrekt zuweisen
+    submittedWords = {};
+    io.emit('gameStarted', { assignments });
   });
 
   // Wort einreichen
