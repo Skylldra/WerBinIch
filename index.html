@@ -6,11 +6,15 @@
   <title>Wer bin ich</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
+    /* Standard-Styling */
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 0;
       padding: 0;
+      background-color: #ffffff;
+      color: #000000;
+      transition: background-color 0.3s, color 0.3s;
     }
     #registration, #game {
       max-width: 500px;
@@ -44,9 +48,32 @@
       padding: 5px;
       margin-bottom: 10px;
     }
+
+    /* Darkmode Styling */
+    body.dark-mode {
+      background-color: #121212;
+      color: #ffffff;
+    }
+    button.dark-mode {
+      background-color: #333333;
+      color: #ffffff;
+      border: 1px solid #ffffff;
+    }
+
+    /* Mond-Symbol Styling */
+    #darkModeToggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
+  <!-- Mond-Symbol -->
+  <div id="darkModeToggle" onclick="toggleDarkMode()">🌙</div>
+
   <h1>Wer bin ich</h1>
   <div id="registration">
     <input id="playerName" type="text" placeholder="Spielername">
@@ -70,6 +97,14 @@
 
     let players = [];
     let gameStarted = false;
+
+    // Darkmode aktivieren/deaktivieren
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      document.querySelectorAll('button').forEach(button => {
+        button.classList.toggle('dark-mode');
+      });
+    }
 
     // Spieler hinzufügen
     function addPlayer() {
